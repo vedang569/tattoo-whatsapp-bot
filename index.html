@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tattoo Studio Admin - Bookings</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { margin: 0; font-size: 24px; color: #1a1a1a; }
+        .refresh-btn { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .refresh-btn:hover { background-color: #0056b3; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background-color: #f8f9fa; font-weight: 600; text-transform: uppercase; font-size: 12px; color: #666; }
+        tr:hover { background-color: #fcfcfc; }
+        .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; text-transform: uppercase; }
+        .status-confirmed { background-color: #d4edda; color: #155724; }
+        .status-pending_payment { background-color: #fff3cd; color: #856404; }
+        .details-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .empty { text-align: center; padding: 40px; color: #999; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tattoo Studio Bookings</h1>
+            <button class="refresh-btn" onclick="fetchBookings()">Refresh Data</button>
+        </header>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date Created</th>
+                    <th>Phone</th>
+                    <th>Selected Slot</th>
+                    <th>Tattoo Idea</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="bookings-list">
+                <tr><td colspan="5" class="empty">Loading bookings...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        async function fetchBookings() {
+            try {
+                const response = await fetch('/bookings');
+                const bookings = await response.json();
+                const list = document.getElementById('bookings-list');
+                
+                if (bookings.length === 0) {
+                    list.innerHTML = '<tr><td colspan="5" class="empty">No bookings found yet.</td></tr>';
+                    return;
+                }
+
+                list.innerHTML = bookings.map(b => `
+                    <tr>
+                        <td>${new Date(b.created_at).toLocaleString()}</td>
+                        <td>${b.phone}</td>
+                        <td>${b.slot}</td>
+                        <td class="details-cell" title="${b.details}">${b.details}</td>
+                        <td><span class="status status-${b.status}">${b.status.replace('_', ' ')}</span></td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                document.getElementById('bookings-list').innerHTML = '<tr><td colspan="5" class="empty">Error loading data.</td></tr>';
+            }
+        }
+
+        fetchBookings();
+        setInterval(fetchBookings, 30000);
+    </script>
+</body>
+</html>

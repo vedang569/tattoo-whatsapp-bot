@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const { handleMessage } = require('./conversation');
 const db = require('./db');
 const { sendMessage, sendMediaMessage } = require('./twilio-client');
@@ -10,6 +11,10 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 app.post('/webhook', async (req, res) => {
     const from = req.body.From ? req.body.From.replace('whatsapp:', '') : 'test-user';
